@@ -1,0 +1,41 @@
+# Naked & Hyfraid
+
+A Hytale server plugin that makes any world it runs on brutal:
+
+- **One life (hardcore).** When you die you're disconnected and can't rejoin that save. Hytale only has Adventure and Creative modes (no spectator), so being locked out is the penalty. Admins can let someone back in with `/hardcore revive <player>`.
+- **No world map.** Every world uses the server's built-in `Disabled` map provider, so the map won't open.
+- **Armour hurts.** Every few seconds you take damage for each armour piece you're wearing. Go naked and you're fine.
+- **Food doesn't heal.** Food's healing effects (`Food_Instant_Heal_*`, `Food_Health_Regen_*`, ...) lose their Health gain. Other food buffs still work, and **health potions still heal**.
+
+## Install
+
+1. Build it: `./gradlew build` (needs JDK 25; the jar lands in `build/libs/`).
+2. Drop `NakedHyfraid-<version>.jar` into your server's `mods/` folder (or your singleplayer world's mods) and start the server.
+
+## Config
+
+`mods/KingTalon23_NakedHyfraid/config.json` is created on first start:
+
+| Key | Default | What it does |
+| --- | --- | --- |
+| `Hardcore` | `true` | One life per player. |
+| `DeathKickDelaySeconds` | `3` | How long after death before the player is disconnected. |
+| `DisableWorldMap` | `true` | Turns the map off in every world. |
+| `ArmourDamagePerPiece` | `1` | Damage per armour piece each interval (`0` turns it off). |
+| `ArmourDamageIntervalSeconds` | `4` | Seconds between armour damage ticks. A full set (4 pieces) costs 1 HP a second. |
+| `DisableFoodHealing` | `true` | Stops food from healing. |
+| `FoodEffectPrefixes` | `["Food_"]` | Effect ids that count as food. Add more if a mod's food heals with other ids. |
+
+The list of dead players is kept per save in `universe/naked-hyfraid/dead-players.txt`.
+
+## Commands
+
+Need the `nakedhyfraid.command.hardcore` permission.
+
+- `/hardcore list`: who has died.
+- `/hardcore revive <player>`: let a dead player rejoin (username or UUID).
+
+## Notes
+
+- Disabling the map writes `"WorldMap": { "Type": "Disabled" }` into each world's config. If you remove the mod and want the map back, change that setting back in the world's `config.json`.
+- Written against the Update 5 server API (from the decompiled server source). If a later Hytale update renames something, the build will tell you where.
