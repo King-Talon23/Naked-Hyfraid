@@ -1,12 +1,15 @@
 package com.kingtalon23.nakedhyfraid;
 
 import com.hypixel.hytale.assetstore.event.LoadedAssetsEvent;
+import com.hypixel.hytale.assetstore.map.DefaultAssetMap;
 import com.hypixel.hytale.assetstore.map.IndexedLookupTableAssetMap;
 import com.hypixel.hytale.server.core.Constants;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.entityeffect.config.EntityEffect;
+import com.hypixel.hytale.server.core.asset.type.item.config.Item;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerSetupConnectEvent;
+import com.hypixel.hytale.server.core.modules.interaction.interaction.config.RootInteraction;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.Universe;
@@ -21,6 +24,7 @@ import com.kingtalon23.nakedhyfraid.systems.ArmourPenaltySystem;
 import com.kingtalon23.nakedhyfraid.systems.HardcoreDeathSystem;
 
 import javax.annotation.Nonnull;
+import java.util.logging.Level;
 
 /**
  * Naked & Hyfraid: one-life hardcore, no world map, armour hurts, food doesn't heal (potions still do).
@@ -82,8 +86,10 @@ public class NakedHyfraidPlugin extends JavaPlugin {
             }
         });
 
-        // Food stops healing every time effect assets (re)load.
+        // Food stops healing; re-scan whenever effects, items or interactions (re)load.
         getEventRegistry().register(LoadedAssetsEvent.class, EntityEffect.class, this::onEffectsLoaded);
+        getEventRegistry().register(LoadedAssetsEvent.class, Item.class, this::onItemsLoaded);
+        getEventRegistry().register(LoadedAssetsEvent.class, RootInteraction.class, this::onInteractionsLoaded);
 
         getCommandRegistry().registerCommand(new HardcoreCommand());
     }
@@ -97,14 +103,30 @@ public class NakedHyfraidPlugin extends JavaPlugin {
                 MapDisabler.whileRunning(world);
             }
         }
-        if (getConfig().isDisableFoodHealing()) {
-            FoodHealingRemover.strip(EntityEffect.getAssetMap().getAssetMap().values(), getConfig().getFoodEffectPrefixes());
-        }
+        removeFoodHealing();
     }
 
     private void onEffectsLoaded(LoadedAssetsEvent<String, EntityEffect, IndexedLookupTableAssetMap<String, EntityEffect>> event) {
-        if (getConfig().isDisableFoodHealing()) {
-            FoodHealingRemover.strip(event.getLoadedAssets().values(), getConfig().getFoodEffectPrefixes());
+        removeFoodHealing();
+    }
+
+    private void onItemsLoaded(LoadedAssetsEvent<String, Item, DefaultAssetMap<String, Item>> event) {
+        removeFoodHealing();
+    }
+
+    private void onInteractionsLoaded(LoadedAssetsEvent<String, RootInteraction, IndexedLookupTableAssetMap<String, RootInteraction>> event) {
+        removeFoodHealing();
+    }
+
+    private void removeFoodHealing() {
+        if (!getConfig().isDisableFoodHealing()) {
+            return;
+        }
+        try {
+            FoodHealingRemover.apply(getConfig().getFoodEffectPrefixes());
+        } catch (RuntimeException e) {
+            // An asset store that hasn't loaded yet during startup; start() scans again once everything is up.
+            getLogger().at(Level.FINE).withCause(e).log("Food healing scan skipped");
         }
     }
 }

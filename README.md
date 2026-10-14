@@ -5,7 +5,7 @@ A Hytale server plugin that makes any world it runs on brutal:
 - **One life (hardcore).** When you die you're disconnected and can't rejoin that save. Hytale only has Adventure and Creative modes (no spectator), so being locked out is the penalty. Admins can let someone back in with `/hardcore revive <player>`.
 - **No world map.** Every world uses the server's built-in `Disabled` map provider, so the map won't open.
 - **Armour hurts.** Every few seconds you take damage for each armour piece you're wearing. Go naked and you're fine.
-- **Food doesn't heal.** Food's healing effects (`Food_Instant_Heal_*`, `Food_Health_Regen_*`, ...) lose their Health gain. Other food buffs still work, and **health potions still heal**.
+- **Food doesn't heal.** At startup the mod walks every food item's interactions (including shared ones like `HealthRegen_TierCheck_T2` and effects defined inline in the item) and removes the Health gain from every effect they apply, plus any effect named `Food_*`. Other food buffs still work. Any effect a `Potion_` item uses is never touched, so **health potions still heal**. The server log lists every effect it changed.
 
 ## Install
 
@@ -24,7 +24,7 @@ A Hytale server plugin that makes any world it runs on brutal:
 | `ArmourDamagePerPiece` | `1` | Damage per armour piece each interval (`0` turns it off). |
 | `ArmourDamageIntervalSeconds` | `4` | Seconds between armour damage ticks. A full set (4 pieces) costs 1 HP a second. |
 | `DisableFoodHealing` | `true` | Stops food from healing. |
-| `FoodEffectPrefixes` | `["Food_"]` | Effect ids that count as food. Add more if a mod's food heals with other ids. |
+| `FoodEffectPrefixes` | `["Food_"]` | Item and effect id prefixes that count as food (items that use a `Consume_Food` interaction count too). |
 
 The list of dead players is kept per save in `universe/naked-hyfraid/dead-players.txt`.
 
