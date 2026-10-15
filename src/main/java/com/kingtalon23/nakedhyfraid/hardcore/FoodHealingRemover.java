@@ -1,17 +1,26 @@
 package com.kingtalon23.nakedhyfraid.hardcore;
 
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.protocol.InteractionType;
+import com.hypixel.hytale.server.core.entity.InteractionContext;
+import com.hypixel.hytale.server.core.entity.InteractionManager;
 import com.hypixel.hytale.server.core.asset.type.entityeffect.config.EntityEffect;
 import com.hypixel.hytale.server.core.asset.type.item.config.Item;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
+import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.RootInteraction;
+import com.hypixel.hytale.server.core.modules.interaction.interaction.config.data.ListCollector;
+import com.hypixel.hytale.server.core.modules.interaction.interaction.config.none.RunRootInteraction;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.none.simple.ApplyEffectInteraction;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.operation.Operation;
 import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 
-import java.util.Collection;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -20,14 +29,17 @@ import java.util.logging.Level;
  * <p>Food and potions both heal by applying entity effects whose {@code StatModifiers} add Health. An
  * effect is treated as food healing when either:
  * <ul>
- *   <li>a food item applies it: we walk every food item's interactions and interaction vars (for example
- *       its {@code Effect} var, or shared ones like {@code HealthRegen_TierCheck_T2}) and collect every
- *       {@code ApplyEffect}, including effects defined inline in the item; or</li>
+ *   <li>a food item applies it: we walk every food item's interaction chains and interaction vars (for
+ *       example its {@code Effect} var, or shared regen tier checks like {@code HealthRegen_TierCheck_T2}),
+ *       following nested and referenced chains, and collect every {@code ApplyEffect}, including effects
+ *       defined inline in the item; or</li>
  *   <li>its id matches a configured food prefix ({@code Food_} by default), as a fallback for food
  *       added in ways the walk doesn't see.</li>
  * </ul>
  * Any effect a {@code Potion_} item applies is never touched, so potions always keep their healing.
- * For the matching effects only the positive Health entry is removed; stamina, buffs and damage stay.
+ * Instant heals and regen over time are the same thing to the server: {@code ActiveEntityEffect} adds the
+ * effect's {@code StatModifiers} once, or every {@code DamageCalculatorCooldown} seconds for regen. So for
+ * the matching effects removing the positive Health entry stops both; stamina, buffs and damage stay.
  * The client gets the same map in the effect packet, so its prediction stays in sync.
  */
 public final class FoodHealingRemover {
@@ -86,39 +98,77 @@ public final class FoodHealingRemover {
     }
 
     private static void collectEffects(Item item, Map<String, EntityEffect> out) {
+        Deque<String> queue = new ArrayDeque<>();
         if (item.getInteractions() != null) {
-            collectEffects(item.getInteractions().values(), out);
+            queue.addAll(item.getInteractions().values());
         }
         if (item.getInteractionVars() != null) {
-            collectEffects(item.getInteractionVars().values(), out);
+            queue.addAll(item.getInteractionVars().values());
         }
-    }
-
-    private static void collectEffects(Collection<String> rootIds, Map<String, EntityEffect> out) {
-        for (String rootId : rootIds) {
-            if (rootId == null) {
+        Set<String> seen = new HashSet<>();
+        while (!queue.isEmpty()) {
+            String rootId = queue.poll();
+            if (rootId == null || !seen.add(rootId)) {
                 continue;
             }
             RootInteraction root = RootInteraction.getAssetMap().getAsset(rootId);
             if (root == null) {
                 continue;
             }
-            try {
-                for (int i = 0; i < root.getOperationMax(); i++) {
-                    Operation op = root.getOperation(i);
-                    if (op != null && op.getInnerOperation() instanceof ApplyEffectInteraction apply) {
-                        // The effect id field is private; the network packet carries its asset index.
-                        int index = ((com.hypixel.hytale.protocol.ApplyEffectInteraction) apply.toPacket()).effectId;
-                        EntityEffect effect = EntityEffect.getAssetMap().getAsset(index);
-                        if (effect != null && effect.getId() != null) {
-                            out.putIfAbsent(effect.getId(), effect);
-                        }
-                    }
+            scanOperations(root, out);
+            walkChain(item, root, out, queue);
+        }
+    }
+
+    /** The root's own compiled operations, which include its Next/Failed branches. */
+    private static void scanOperations(RootInteraction root, Map<String, EntityEffect> out) {
+        try {
+            for (int i = 0; i < root.getOperationMax(); i++) {
+                Operation op = root.getOperation(i);
+                if (op != null && op.getInnerOperation() instanceof ApplyEffectInteraction apply) {
+                    addEffect(apply, out);
                 }
-            } catch (RuntimeException e) {
-                // Root not built yet (operations null) or an unexpected interaction shape: skip it.
-                LOGGER.at(Level.FINE).withCause(e).log("Could not scan interaction %s", rootId);
             }
+        } catch (RuntimeException e) {
+            // Root not built yet (operations null) or an unexpected interaction shape: skip it.
+            LOGGER.at(Level.FINE).withCause(e).log("Could not scan interaction %s", root.getId());
+        }
+    }
+
+    /**
+     * Follows the chain the way the server's own validators do ({@code InteractionManager.walkChain} with an
+     * entity-less context), which also reaches Replace vars, Parallel, Serial, Repeat and Charging branches
+     * (where tier-check regen buffs like {@code HealthRegen_TierCheck_T2} live). RunRoot targets are queued.
+     */
+    private static void walkChain(Item item, RootInteraction root, Map<String, EntityEffect> out, Deque<String> queue) {
+        InteractionContext context = InteractionContext.withoutEntity();
+        context.setInteractionVarsGetter(c -> item.getInteractionVars());
+        ListCollector<Interaction> collector = new ListCollector<>((tag, c, interaction) -> interaction);
+        try {
+            InteractionManager.walkChain(collector, InteractionType.Primary, context, root);
+        } catch (RuntimeException e) {
+            LOGGER.at(Level.FINE).withCause(e).log("Could not walk interaction %s", root.getId());
+            return;
+        }
+        for (Interaction interaction : collector.getList()) {
+            if (interaction instanceof ApplyEffectInteraction apply) {
+                addEffect(apply, out);
+            } else if (interaction instanceof RunRootInteraction run) {
+                int index = ((com.hypixel.hytale.protocol.RunRootInteraction) run.toPacket()).rootInteraction;
+                RootInteraction target = RootInteraction.getAssetMap().getAsset(index);
+                if (target != null) {
+                    queue.add(target.getId());
+                }
+            }
+        }
+    }
+
+    private static void addEffect(ApplyEffectInteraction apply, Map<String, EntityEffect> out) {
+        // The effect id field is private; the network packet carries its asset index.
+        int index = ((com.hypixel.hytale.protocol.ApplyEffectInteraction) apply.toPacket()).effectId;
+        EntityEffect effect = EntityEffect.getAssetMap().getAsset(index);
+        if (effect != null && effect.getId() != null) {
+            out.putIfAbsent(effect.getId(), effect);
         }
     }
 

@@ -5,7 +5,7 @@ A Hytale server plugin that makes any world it runs on brutal:
 - **One life (hardcore).** When you die you're disconnected and can't rejoin that save. Hytale only has Adventure and Creative modes (no spectator), so being locked out is the penalty. Admins can let someone back in with `/hardcore revive <player>`.
 - **No world map.** Every world uses the server's built-in `Disabled` map provider, so the map won't open.
 - **Armour hurts.** Every few seconds you take damage for each armour piece you're wearing. Go naked and you're fine.
-- **Food doesn't heal.** At startup the mod walks every food item's interactions (including shared ones like `HealthRegen_TierCheck_T2` and effects defined inline in the item) and removes the Health gain from every effect they apply, plus any effect named `Food_*`. Other food buffs still work. Any effect a `Potion_` item uses is never touched, so **health potions still heal**. The server log lists every effect it changed.
+- **Food doesn't heal.** No instant heals and no health regen buffs from food. At startup the mod follows every food item's interaction chains (including nested and linked ones like the `HealthRegen_TierCheck` regen buffs, and effects defined inline in the item) and removes the Health gain from every effect they apply, plus any effect named `Food_*`. Instant heals and regen over time both heal through that same Health entry, so both stop. Other food buffs, like stamina, still work. Any effect a `Potion_` item uses is never touched, so **health potions still heal**. The server log lists every effect it changed.
 
 ## Install
 
