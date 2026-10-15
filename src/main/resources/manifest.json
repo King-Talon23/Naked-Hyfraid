@@ -1,0 +1,13 @@
+{
+  "Group": "KingTalon23",
+  "Name": "NakedHyfraid",
+  "Version": "0.1.0",
+  "Description": "One-life hardcore, no world map, armour hurts you, and food no longer heals (health potions still do).",
+  "Authors": [
+    { "Name": "KingTalon23" }
+  ],
+  "Website": "https://github.com/King-Talon23/Naked-Hyfraid",
+  "Main": "com.kingtalon23.nakedhyfraid.NakedHyfraidPlugin",
+  "ServerVersion": "*",
+  "IncludesAssetPack": true
+}
