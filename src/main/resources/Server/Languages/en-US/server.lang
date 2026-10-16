@@ -1,0 +1,52 @@
+# Naked & Hyfraid: food no longer heals, so its descriptions stop saying it does.
+items.Plant_Fruit_Apple.description = [TMP] Liked by <color is="#ffffff">Goats</color>, <color is="#ffffff">Rams</color> and <color is="#ffffff">Mouflons</color>.
+items.Plant_Fruit_Berries_Red.description = [TMP] Does not restore health.
+items.Plant_Fruit_Berries_Blue.description = [TMP] Does not restore health.
+items.Plant_Fruit_Orange.description = [TMP] Does not restore health.
+items.Plant_Fruit_Pear.description = [TMP] Does not restore health.
+items.Plant_Fruit_Azure.description = [TMP] Does not restore health.
+items.Plant_Fruit_Coconut.description = [TMP] Does not restore health.
+items.Plant_Fruit_Mango.description = [TMP] Does not restore health.
+items.Plant_Fruit_Pinkberry.description = [TMP] Does not restore health.
+items.Plant_Fruit_Poison.description = [TMP] Does not restore health.
+items.Plant_Fruit_Spiral.description = [TMP] Does not restore health.
+items.Plant_Fruit_Windwillow.description = [TMP] Does not restore health.
+items.Plant_Crop_Carrot_Item.description = [TMP] Liked by <color is="#ffffff">Rabbits</color>, <color is="#ffffff">Bunnies</color> and <color is="#ffffff">Horses</color>.
+items.Plant_Crop_Corn_Item.description = [TMP] Liked by <color is="#ffffff">Chickens</color> and <color is="#ffffff">Turkeys</color>.
+items.Plant_Crop_Potato_Item.description = [TMP] Liked by <color is="#ffffff">Mosshorns</color>.
+items.Plant_Crop_Pumpkin_Item.description = [TMP] Liked by <color is="#ffffff">Boars</color>.
+items.Plant_Crop_Onion_Item.description = [TMP] Liked by <color is="#ffffff">Warthogs</color>.
+items.Plant_Crop_Lettuce_Item.description = [TMP] Liked by <color is="#ffffff">Cows</color> and <color is="#ffffff">Sheep</color>.
+items.Plant_Crop_Turnip_Item.description = [TMP] Liked by <color is="#ffffff">Pigs</color>.
+items.Plant_Crop_Tomato_Item.description = [TMP] Liked by <color is="#ffffff">Camels</color>.
+items.Plant_Crop_Rice_Item.description = [TMP] Does not restore health.
+items.Plant_Crop_Cauliflower_Item.description = [TMP] Liked by <color is="#ffffff">Bison</color>.
+items.Plant_Crop_Chilli_Item.description = [TMP] Liked by <color is="#ffffff">Skrills</color>.
+items.Plant_Crop_Aubergine_Item.description = [TMP] Liked by <color is="#ffffff">Wild Pigs</color>.
+items.Plant_Mushroom_Brown.description = [TMP] Does not restore health.
+items.Plant_Mushroom_Red.description = [TMP] Does not restore health.
+items.Food_Vegetable_Cooked.description = [TMP] Grants:\n\n• <color is="#ffffff">Stamina Boost I</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Kebab_Fruit.description = [TMP] Grants:\n\n• <color is="#ffffff">Stamina Boost II</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Kebab_Vegetable.description = [TMP] Grants:\n\n• <color is="#ffffff">Stamina Boost II</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Kebab_Mushroom.description = [TMP] Grants:\n\n• <color is="#ffffff">Stamina Boost II</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Salad_Berry.description = [TMP] Grants:\n\n• <color is="#ffffff">Stamina Boost II</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Salad_Mushroom.description = [TMP] Grants:\n\n• <color is="#ffffff">Stamina Boost II</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Salad_Caesar.description = [TMP] Grants:\n\n• <color is="#ffffff">Stamina Boost III</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Pie_Apple.description = [TMP] Grants:\n\n• <color is="#ffffff">Stamina Boost III</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Recipe_Food_Pie_Apple.description = [TMP] Teaches the <item is="Food_Pie_Apple"/> recipe.\n\nGrants:\n\n• <color is="#ffffff">Stamina Boost III</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Recipe_Food_Pie_Pumpkin.description = [TMP] Teaches the <item is="Food_Pie_Pumpkin"/> recipe.\n\nGrants:\n\n• <color is="#ffffff">Stamina Boost III</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Recipe_Food_Pie_Meat.description = [TMP] Teaches the <item is="Food_Pie_Meat"/> recipe.\n\nGrants:\n\n• <color is="#ffffff">Health Boost III</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Recipe_Food_Salad_Caesar.description = [TMP] Teaches the <item is="Food_Salad_Caesar"/> recipe.\n\nGrants:\n\n• <color is="#ffffff">Stamina Boost III</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Pie_Pumpkin.description = [TMP] Grants:\n\n• <color is="#ffffff">Stamina Boost III</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Wildmeat_Cooked.description = [TMP] Grants:\n\n• <color is="#ffffff">Health Boost I</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Fish_Grilled.description = [TMP] Grants:\n\n• <color is="#ffffff">Health Boost I</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Kebab_Meat.description = [TMP] Grants:\n\n• <color is="#ffffff">Health Boost II</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Pie_Meat.description = [TMP] Grants:\n\n• <color is="#ffffff">Health Boost III</color>\n\nDuration: <color is="#ffffff">6:00</color>
+items.Food_Wildmeat_Raw.description = [TMP] Does not restore health.
+items.Food_Fish_Raw.description = [TMP] Does not restore health.
+items.Food_Pork_Raw.description = [TMP] Does not restore health.
+items.Food_Chicken_Raw.description = [TMP] Does not restore health.
+items.Food_Beef_Raw.description = [TMP] Does not restore health.
+items.Food_Bread.description = [TMP] Does not restore health.
+items.Food_Popcorn.description = [TMP] Does not restore health.
+items.Food_Cheese.description = [TMP] Does not restore health.

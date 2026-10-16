@@ -18,9 +18,9 @@ public class NakedHyfraidConfig {
             .append(new KeyedCodec<>("DisableWorldMap", Codec.BOOLEAN),
                     (config, value) -> config.disableWorldMap = value,
                     config -> config.disableWorldMap).add()
-            .append(new KeyedCodec<>("ArmourDamagePerPiece", Codec.FLOAT),
-                    (config, value) -> config.armourDamagePerPiece = value,
-                    config -> config.armourDamagePerPiece).add()
+            .append(new KeyedCodec<>("ArmourDamagePerTick", Codec.FLOAT),
+                    (config, value) -> config.armourDamagePerTick = value,
+                    config -> config.armourDamagePerTick).add()
             .append(new KeyedCodec<>("ArmourDamageIntervalSeconds", Codec.FLOAT),
                     (config, value) -> config.armourDamageIntervalSeconds = value,
                     config -> config.armourDamageIntervalSeconds).add()
@@ -35,8 +35,8 @@ public class NakedHyfraidConfig {
     private boolean hardcore = true;
     private float deathKickDelaySeconds = 3.0f;
     private boolean disableWorldMap = true;
-    private float armourDamagePerPiece = 1.0f;
-    private float armourDamageIntervalSeconds = 4.0f;
+    private float armourDamagePerTick = 5.0f;
+    private float armourDamageIntervalSeconds = 2.5f;
     private boolean disableFoodHealing = true;
     private String[] foodEffectPrefixes = {"Food_"};
 
@@ -52,8 +52,8 @@ public class NakedHyfraidConfig {
         return disableWorldMap;
     }
 
-    public float getArmourDamagePerPiece() {
-        return armourDamagePerPiece;
+    public float getArmourDamagePerTick() {
+        return armourDamagePerTick;
     }
 
     public float getArmourDamageIntervalSeconds() {

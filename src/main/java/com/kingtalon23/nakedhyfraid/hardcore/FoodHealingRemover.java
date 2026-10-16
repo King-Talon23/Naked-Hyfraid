@@ -15,6 +15,7 @@ import com.hypixel.hytale.server.core.modules.interaction.interaction.config.non
 import com.hypixel.hytale.server.core.modules.interaction.interaction.operation.Operation;
 import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 
+import java.lang.reflect.Field;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
@@ -41,6 +42,9 @@ import java.util.logging.Level;
  * effect's {@code StatModifiers} once, or every {@code DamageCalculatorCooldown} seconds for regen. So for
  * the matching effects removing the positive Health entry stops both; stamina, buffs and damage stay.
  * The client gets the same map in the effect packet, so its prediction stays in sync.
+ *
+ * <p>An effect left with no stat changes at all (the regen buffs) still gets applied, so its status icon
+ * is cleared too; otherwise the HUD would show a regen buff that does nothing.
  */
 public final class FoodHealingRemover {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
@@ -81,6 +85,26 @@ public final class FoodHealingRemover {
             }
             stats.remove(health);
             LOGGER.at(Level.INFO).log("Removed healing from food effect %s", entry.getKey());
+            EntityEffect effect = entry.getValue();
+            if (stats.isEmpty() && (effect.getStatModifiers() == null || effect.getStatModifiers().isEmpty())) {
+                hideIcon(effect);
+            }
+        }
+    }
+
+    /** {@code statusEffectIcon} has no setter; clear it on the asset and on the packet it may have cached. */
+    private static void hideIcon(EntityEffect effect) {
+        if (effect.getStatusEffectIcon() == null) {
+            return;
+        }
+        try {
+            Field icon = EntityEffect.class.getDeclaredField("statusEffectIcon");
+            icon.setAccessible(true);
+            icon.set(effect, null);
+            effect.toPacket().statusEffectIcon = null;
+            LOGGER.at(Level.INFO).log("Hid status icon of food effect %s", effect.getId());
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            LOGGER.at(Level.WARNING).withCause(e).log("Could not hide status icon of food effect %s", effect.getId());
         }
     }
 

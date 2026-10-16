@@ -28,8 +28,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Hurts players for every armour piece they wear: each interval, deals
- * {@code ArmourDamagePerPiece x pieces worn} damage. Wear nothing and you take nothing.
+ * Hurts players who wear armour: each interval, deals {@code ArmourDamagePerTick} damage while any
+ * armour piece is equipped. Wear nothing and you take nothing.
  */
 public class ArmourPenaltySystem extends EntityTickingSystem<EntityStore> {
     /** Id of the damage cause shipped in {@code Server/Entity/Damage/NakedHyfraid_Armour.json}. */
@@ -64,7 +64,7 @@ public class ArmourPenaltySystem extends EntityTickingSystem<EntityStore> {
             @Nonnull CommandBuffer<EntityStore> commandBuffer
     ) {
         NakedHyfraidConfig config = NakedHyfraidPlugin.get().getConfig();
-        if (config.getArmourDamagePerPiece() <= 0.0f) {
+        if (config.getArmourDamagePerTick() <= 0.0f) {
             return;
         }
         PlayerRef playerRef = archetypeChunk.getComponent(index, PlayerRef.getComponentType());
@@ -73,9 +73,8 @@ public class ArmourPenaltySystem extends EntityTickingSystem<EntityStore> {
             return;
         }
 
-        int pieces = countPieces(armor.getInventory());
         UUID uuid = playerRef.getUuid();
-        if (pieces == 0) {
+        if (!wearsArmour(armor.getInventory())) {
             // Taking armour off resets the timer, so re-equipping can't dodge a tick that was nearly due.
             elapsed.remove(uuid);
             return;
@@ -90,7 +89,7 @@ public class ArmourPenaltySystem extends EntityTickingSystem<EntityStore> {
         elapsed.put(uuid, time % interval);
 
         Ref<EntityStore> ref = archetypeChunk.getReferenceTo(index);
-        Damage damage = new Damage(Damage.NULL_SOURCE, getDamageCause(), config.getArmourDamagePerPiece() * pieces);
+        Damage damage = new Damage(Damage.NULL_SOURCE, getDamageCause(), config.getArmourDamagePerTick());
         DamageSystems.executeDamage(ref, commandBuffer, damage);
     }
 
@@ -98,15 +97,14 @@ public class ArmourPenaltySystem extends EntityTickingSystem<EntityStore> {
         elapsed.remove(uuid);
     }
 
-    private static int countPieces(ItemContainer container) {
-        int pieces = 0;
+    private static boolean wearsArmour(ItemContainer container) {
         short capacity = container.getCapacity();
         for (short slot = 0; slot < capacity; slot++) {
             if (!ItemStack.isEmpty(container.getItemStack(slot))) {
-                pieces++;
+                return true;
             }
         }
-        return pieces;
+        return false;
     }
 
     private DamageCause getDamageCause() {
